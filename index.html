@@ -4,287 +4,664 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>抽獎程式</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 18px;
+            margin: 20px 10px;
+        }
+
+        .participants-section {
+            margin-bottom: 30px;
+        }
+
+        .participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 15px;
+            min-height: 60px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .participant-tag {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeInScale 0.3s ease;
+        }
+
+        .remove-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .lottery-section {
+            margin-bottom: 30px;
+        }
+
+        .winner-display {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .winner-display.spinning {
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        .winner-display.winner-announced {
+            animation: celebration 0.8s ease;
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+        }
+
+        .winner-text {
+            z-index: 2;
+            position: relative;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            animation: confetti-fall 3s ease-out forwards;
+            opacity: 0;
+        }
+
+        .winners-history {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .winner-item {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            animation: slideInLeft 0.5s ease;
+        }
+
+        .empty-state {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                opacity: 1;
+                transform: translateY(-100px) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100px) rotate(360deg);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            input[type="text"] {
+                min-width: auto;
+            }
+            
+            .btn-large {
+                padding: 14px 24px;
+                font-size: 16px;
+                margin: 10px 5px;
+            }
+            
+            .winner-display {
+                font-size: 1.5em;
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <h1>🎉 抽獎程式</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="participantInput" placeholder="輸入參加者姓名" maxlength="20">
+                <button class="btn" onclick="addParticipant()">新增</button>
+            </div>
+            <div class="input-group">
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVFile(this)">
+                <button class="btn" onclick="document.getElementById('csvFileInput').click()">📁 匯入CSV</button>
+                <button class="btn btn-secondary" onclick="clearAll()">清空所有</button>
+            </div>
+            <div class="csv-info">
+                <small style="color: #6c757d; display: block; margin-top: 10px;">
+                    💡 <strong>CSV格式範例：</strong><br>
+                    • 有標題：姓名,部門,職位<br>
+                    • 純姓名：每行一個姓名<br>
+                    • 支援欄位：姓名、名字、name、Name
+                </small>
+                <button class="btn" style="margin-top: 10px; font-size: 12px; padding: 6px 12px;" onclick="downloadSampleCSV()">📥 下載範例檔案</button>
+            </div>
+        </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { Gift, Users, Trash2, Plus, Award, Shuffle } = lucide;
+        <div class="participants-section">
+            <h3>參加者列表 (<span id="participantCount">0</span>人)</h3>
+            <div class="participants-list" id="participantsList">
+                <div class="empty-state">尚無參加者，請先新增參加者</div>
+            </div>
+        </div>
 
-        function LotteryApp() {
-            const [participants, setParticipants] = useState([]);
-            const [prizes, setPrizes] = useState([]);
-            const [winners, setWinners] = useState([]);
-            const [currentDraw, setCurrentDraw] = useState(null);
-            const [isDrawing, setIsDrawing] = useState(false);
-            const [newParticipant, setNewParticipant] = useState('');
-            const [newPrize, setNewPrize] = useState({ name: '', count: 1 });
+        <div class="lottery-section">
+            <div class="winner-display" id="winnerDisplay">
+                <div class="winner-text">準備開始抽獎！</div>
+            </div>
+            <button class="btn btn-large" id="lotteryBtn" onclick="startLottery()" disabled>🎲 開始抽獎</button>
+            <button class="btn btn-large btn-secondary" onclick="resetLottery()">🔄 重置</button>
+        </div>
 
-            // 添加參與者
-            const addParticipant = () => {
-                if (newParticipant.trim()) {
-                    setParticipants([...participants, newParticipant.trim()]);
-                    setNewParticipant('');
-                }
-            };
+        <div class="winners-history" id="winnersHistory" style="display: none;">
+            <h3>🏆 中獎紀錄</h3>
+            <div id="winnersList"></div>
+        </div>
+    </div>
 
-            // 添加獎品
-            const addPrize = () => {
-                if (newPrize.name.trim()) {
-                    setPrizes([...prizes, { ...newPrize, id: Date.now() }]);
-                    setNewPrize({ name: '', count: 1 });
-                }
-            };
+    <script>
+        let participants = [];
+        let winners = [];
+        let isLotteryRunning = false;
 
-            // 批量添加參與者
-            const handleParticipantTextarea = (text) => {
-                const names = text.split('\n').filter(name => name.trim());
-                setParticipants(names);
-            };
-
-            // 抽獎動畫
-            const startDraw = (prize) => {
-                if (participants.length === 0) {
-                    alert('請先添加參與者！');
-                    return;
-                }
-
-                const availableParticipants = participants.filter(p => 
-                    !winners.some(w => w.participant === p)
-                );
-
-                if (availableParticipants.length < prize.count) {
-                    alert('剩餘參與者數量不足！');
-                    return;
-                }
-
-                setIsDrawing(true);
-                setCurrentDraw(prize);
-                
-                // 抽獎動畫效果
-                let count = 0;
-                const interval = setInterval(() => {
-                    const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-                    setCurrentDraw({
-                        ...prize,
-                        currentName: availableParticipants[randomIndex]
-                    });
-                    count++;
-                    
-                    if (count > 20) {
-                        clearInterval(interval);
-                        
-                        // 實際抽獎結果
-                        const selectedWinners = [];
-                        const tempAvailable = [...availableParticipants];
-                        
-                        for (let i = 0; i < prize.count; i++) {
-                            const randomIndex = Math.floor(Math.random() * tempAvailable.length);
-                            selectedWinners.push(tempAvailable[randomIndex]);
-                            tempAvailable.splice(randomIndex, 1);
-                        }
-                        
-                        const newWinners = selectedWinners.map(participant => ({
-                            participant,
-                            prize: prize.name,
-                            time: new Date().toLocaleString('zh-TW')
-                        }));
-                        
-                        setWinners([...winners, ...newWinners]);
-                        setIsDrawing(false);
-                        setCurrentDraw(null);
-                    }
-                }, 100);
-            };
-
-            // 重置所有資料
-            const resetAll = () => {
-                if (confirm('確定要重置所有資料嗎？')) {
-                    setParticipants([]);
-                    setPrizes([]);
-                    setWinners([]);
-                    setCurrentDraw(null);
-                }
-            };
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-8">
-                            <h1 className="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
-                                <Gift className="text-yellow-400" />
-                                抽獎程式
-                                <Award className="text-yellow-400" />
-                            </h1>
-                            <p className="text-blue-200">設定參與者和獎品，開始你的抽獎活動！</p>
-                        </div>
-
-                        {/* 抽獎動畫區域 */}
-                        {(isDrawing || currentDraw) && (
-                            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-8 text-center border border-white/20">
-                                <div className="text-2xl font-bold text-white mb-4">
-                                    正在抽取：{currentDraw?.name}
-                                </div>
-                                <div className="text-6xl font-bold text-yellow-400 mb-4 animate-bounce">
-                                    {currentDraw?.currentName || '🎯'}
-                                </div>
-                                {isDrawing && (
-                                    <div className="text-lg text-blue-200">抽獎中...</div>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="grid lg:grid-cols-3 gap-6">
-                            {/* 參與者管理 */}
-                            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <Users className="text-blue-400" />
-                                    參與者 ({participants.length})
-                                </h2>
-                                
-                                <div className="space-y-3 mb-4">
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={newParticipant}
-                                            onChange={(e) => setNewParticipant(e.target.value)}
-                                            onKeyPress={(e) => e.key === 'Enter' && addParticipant()}
-                                            placeholder="輸入參與者姓名"
-                                            className="flex-1 px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400"
-                                        />
-                                        <button
-                                            onClick={addParticipant}
-                                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                                        >
-                                            <Plus size={20} />
-                                        </button>
-                                    </div>
-                                    
-                                    <div className="text-sm text-blue-200 mb-2">或批量輸入（每行一個）：</div>
-                                    <textarea
-                                        placeholder="張三&#10;李四&#10;王五"
-                                        onChange={(e) => handleParticipantTextarea(e.target.value)}
-                                        className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400 h-20 resize-none"
-                                    />
-                                </div>
-
-                                <div className="max-h-48 overflow-y-auto space-y-1">
-                                    {participants.map((participant, index) => {
-                                        const hasWon = winners.some(w => w.participant === participant);
-                                        return (
-                                            <div
-                                                key={index}
-                                                className={`p-2 rounded-lg flex justify-between items-center ${
-                                                    hasWon 
-                                                        ? 'bg-green-500/30 text-green-200' 
-                                                        : 'bg-white/20 text-white'
-                                                }`}
-                                            >
-                                                <span>{participant}</span>
-                                                {hasWon && <Award size={16} className="text-green-400" />}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* 獎品管理 */}
-                            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <Gift className="text-yellow-400" />
-                                    獎品設定
-                                </h2>
-                                
-                                <div className="space-y-3 mb-4">
-                                    <input
-                                        type="text"
-                                        value={newPrize.name}
-                                        onChange={(e) => setNewPrize({...newPrize, name: e.target.value})}
-                                        placeholder="獎品名稱"
-                                        className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-yellow-400"
-                                    />
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="number"
-                                            value={newPrize.count}
-                                            onChange={(e) => setNewPrize({...newPrize, count: Math.max(1, parseInt(e.target.value) || 1)})}
-                                            min="1"
-                                            placeholder="數量"
-                                            className="flex-1 px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-yellow-400"
-                                        />
-                                        <button
-                                            onClick={addPrize}
-                                            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
-                                        >
-                                            <Plus size={20} />
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    {prizes.map((prize) => (
-                                        <div key={prize.id} className="bg-white/20 p-3 rounded-lg">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-white font-semibold">{prize.name}</span>
-                                                <span className="text-yellow-400">×{prize.count}</span>
-                                            </div>
-                                            <button
-                                                onClick={() => startDraw(prize)}
-                                                disabled={isDrawing}
-                                                className="w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                <Shuffle size={16} />
-                                                開始抽獎
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* 中獎結果 */}
-                            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <Award className="text-green-400" />
-                                    中獎結果 ({winners.length})
-                                </h2>
-                                
-                                <div className="max-h-64 overflow-y-auto space-y-2">
-                                    {winners.map((winner, index) => (
-                                        <div key={index} className="bg-green-500/20 p-3 rounded-lg border border-green-400/30">
-                                            <div className="text-green-200 font-semibold">{winner.participant}</div>
-                                            <div className="text-yellow-400 text-sm">{winner.prize}</div>
-                                            <div className="text-green-300/70 text-xs">{winner.time}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                {winners.length > 0 && (
-                                    <button
-                                        onClick={resetAll}
-                                        className="w-full mt-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Trash2 size={16} />
-                                        重置所有
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+        function addParticipant() {
+            const input = document.getElementById('participantInput');
+            const name = input.value.trim();
+            
+            if (name === '') {
+                alert('請輸入參加者姓名！');
+                return;
+            }
+            
+            if (participants.includes(name)) {
+                alert('此參加者已存在！');
+                return;
+            }
+            
+            participants.push(name);
+            input.value = '';
+            updateParticipantsList();
+            updateLotteryButton();
         }
 
-        ReactDOM.render(<LotteryApp />, document.getElementById('root'));
+        function removeParticipant(name) {
+            const index = participants.indexOf(name);
+            if (index > -1) {
+                participants.splice(index, 1);
+                updateParticipantsList();
+                updateLotteryButton();
+            }
+        }
+
+        function updateParticipantsList() {
+            const list = document.getElementById('participantsList');
+            const count = document.getElementById('participantCount');
+            
+            count.textContent = participants.length;
+            
+            if (participants.length === 0) {
+                list.innerHTML = '<div class="empty-state">尚無參加者，請先新增參加者</div>';
+            } else {
+                list.innerHTML = participants.map(name => 
+                    `<div class="participant-tag">
+                        ${name}
+                        <button class="remove-btn" onclick="removeParticipant('${name}')">×</button>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        function updateLotteryButton() {
+            const btn = document.getElementById('lotteryBtn');
+            btn.disabled = participants.length === 0 || isLotteryRunning;
+        }
+
+        function handleCSVFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const newParticipants = parseCSV(csv);
+                    
+                    if (newParticipants.length === 0) {
+                        showImportStatus('CSV檔案中沒有找到有效的參加者名單', 'error');
+                        return;
+                    }
+                    
+                    // 過濾重複的參加者
+                    const existingNames = new Set(participants);
+                    const uniqueNewParticipants = newParticipants.filter(name => !existingNames.has(name) && name.trim() !== '');
+                    
+                    if (uniqueNewParticipants.length === 0) {
+                        showImportStatus('CSV檔案中的參加者都已經存在', 'error');
+                        return;
+                    }
+                    
+                    // 添加新參加者
+                    participants.push(...uniqueNewParticipants);
+                    updateParticipantsList();
+                    updateLotteryButton();
+                    
+                    showImportStatus(`成功匯入 ${uniqueNewParticipants.length} 位參加者！`, 'success');
+                    
+                } catch (error) {
+                    console.error('CSV解析錯誤:', error);
+                    showImportStatus('CSV檔案格式錯誤，請檢查檔案內容', 'error');
+                }
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+            input.value = ''; // 清空檔案輸入，允許重複選擇同一檔案
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').map(line => line.trim()).filter(line => line);
+            if (lines.length === 0) return [];
+            
+            let participants = [];
+            
+            // 檢查第一行是否為標題
+            const firstLine = lines[0];
+            const hasHeader = firstLine.includes('姓名') || firstLine.includes('名字') || firstLine.includes('name') || firstLine.includes('Name');
+            
+            if (hasHeader) {
+                // 有標題的情況 - 尋找姓名欄位
+                const headers = firstLine.split(',').map(h => h.trim().replace(/"/g, ''));
+                const nameColumnIndex = headers.findIndex(header => 
+                    header.includes('姓名') || header.includes('名字') || 
+                    header.toLowerCase().includes('name')
+                );
+                
+                if (nameColumnIndex !== -1) {
+                    // 找到姓名欄位，解析數據行
+                    for (let i = 1; i < lines.length; i++) {
+                        const columns = lines[i].split(',').map(col => col.trim().replace(/"/g, ''));
+                        if (columns[nameColumnIndex] && columns[nameColumnIndex].trim()) {
+                            participants.push(columns[nameColumnIndex].trim());
+                        }
+                    }
+                } else {
+                    // 有標題但找不到姓名欄位，當作每行一個姓名處理（跳過第一行）
+                    participants = lines.slice(1)
+                        .map(line => line.split(',')[0].trim().replace(/"/g, ''))
+                        .filter(name => name);
+                }
+            } else {
+                // 沒有標題 - 每行第一個欄位當作姓名
+                participants = lines
+                    .map(line => line.split(',')[0].trim().replace(/"/g, ''))
+                    .filter(name => name);
+            }
+            
+            // 去除重複並過濾空值
+            return [...new Set(participants)].filter(name => name && name.length <= 20);
+        }
+
+        function showImportStatus(message, type) {
+            // 移除之前的狀態訊息
+            const existingStatus = document.querySelector('.import-status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `import-status import-${type}`;
+            statusDiv.textContent = message;
+            
+            const inputSection = document.querySelector('.input-section');
+            inputSection.appendChild(statusDiv);
+            
+            // 3秒後自動移除狀態訊息
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.remove();
+                }
+            }, 3000);
+        }
+
+        function downloadSampleCSV() {
+            const sampleData = `姓名,部門,職位
+王小明,業務部,經理
+李小華,行政部,專員  
+張小美,研發部,工程師
+陳大強,財務部,會計
+林小雅,行銷部,企劃
+黃志明,資訊部,程式師
+吳美玲,人資部,專員
+劉建國,總務部,主任`;
+
+            const blob = new Blob(['\ufeff' + sampleData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', '抽獎參加者範例.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showImportStatus('範例 CSV 檔案已下載！', 'success');
+        }
+
+        function clearAll() {
+            if (participants.length === 0) return;
+            
+            if (confirm('確定要清空所有參加者嗎？')) {
+                participants = [];
+                updateParticipantsList();
+                updateLotteryButton();
+            }
+        }
+
+        function startLottery() {
+            if (participants.length === 0 || isLotteryRunning) return;
+            
+            isLotteryRunning = true;
+            const winnerDisplay = document.getElementById('winnerDisplay');
+            const lotteryBtn = document.getElementById('lotteryBtn');
+            
+            winnerDisplay.classList.add('spinning');
+            winnerDisplay.classList.remove('winner-announced');
+            lotteryBtn.disabled = true;
+            
+            // 抽獎動畫效果
+            let spinCount = 0;
+            const maxSpins = 20 + Math.floor(Math.random() * 20); // 20-40次隨機切換
+            
+            const spinInterval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * participants.length);
+                const randomName = participants[randomIndex];
+                winnerDisplay.querySelector('.winner-text').textContent = randomName;
+                
+                spinCount++;
+                
+                if (spinCount >= maxSpins) {
+                    clearInterval(spinInterval);
+                    announceWinner();
+                }
+            }, 100); // 每100ms切換一次
+        }
+
+        function announceWinner() {
+            const winnerDisplay = document.getElementById('winnerDisplay');
+            const winnerIndex = Math.floor(Math.random() * participants.length);
+            const winner = participants[winnerIndex];
+            
+            // 移除獲獎者從參與者列表
+            participants.splice(winnerIndex, 1);
+            
+            // 添加到獲獎紀錄
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            
+            winners.push({
+                name: winner,
+                time: timeString,
+                round: winners.length + 1
+            });
+            
+            // 更新顯示
+            winnerDisplay.classList.remove('spinning');
+            winnerDisplay.classList.add('winner-announced');
+            winnerDisplay.querySelector('.winner-text').textContent = `🎉 ${winner} 🎉`;
+            
+            // 播放慶祝動畫
+            createConfetti(winnerDisplay);
+            
+            // 更新列表和按鈕
+            updateParticipantsList();
+            updateWinnersList();
+            updateLotteryButton();
+            
+            isLotteryRunning = false;
+            
+            // 顯示獲獎紀錄區域
+            document.getElementById('winnersHistory').style.display = 'block';
+        }
+
+        function createConfetti(container) {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = ['#ff6b6b', '#ffd700', '#4ecdc4', '#45b7d1', '#96ceb4'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    
+                    container.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            confetti.parentNode.removeChild(confetti);
+                        }
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+
+        function updateWinnersList() {
+            const list = document.getElementById('winnersList');
+            
+            if (winners.length === 0) {
+                list.innerHTML = '<div class="empty-state">尚無中獎紀錄</div>';
+            } else {
+                list.innerHTML = winners.map(winner => 
+                    `<div class="winner-item">
+                        第${winner.round}輪：<strong>${winner.name}</strong> - ${winner.time}
+                    </div>`
+                ).reverse().join(''); // 最新的顯示在上面
+            }
+        }
+
+        function resetLottery() {
+            if (confirm('確定要重置抽獎嗎？這將清空所有參加者和中獎紀錄。')) {
+                participants = [];
+                winners = [];
+                isLotteryRunning = false;
+                
+                document.getElementById('winnerDisplay').className = 'winner-display';
+                document.getElementById('winnerDisplay').querySelector('.winner-text').textContent = '準備開始抽獎！';
+                document.getElementById('winnersHistory').style.display = 'none';
+                
+                updateParticipantsList();
+                updateWinnersList();
+                updateLotteryButton();
+            }
+        }
+
+        // 允許按 Enter 鍵新增參加者
+        document.getElementById('participantInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addParticipant();
+            }
+        });
+
+        // 初始化
+        updateParticipantsList();
+        updateLotteryButton();
     </script>
 </body>
 </html>
